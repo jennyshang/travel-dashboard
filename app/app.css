@@ -536,7 +536,7 @@
   }
 
   .nav-item {
-    @apply flex items-center text-xs md:text-lg font-normal cursor-pointer gap-2.5 py-[18px] px-3.5 rounded-lg text-dark-200 hover:bg-primary-100 hover:text-white;
+    @apply flex items-center text-xs md:text-base font-normal cursor-pointer gap-2.5 py-[18px] px-3.5 rounded-lg text-dark-200 hover:bg-primary-100 hover:text-white;
   }
 
   .combo-box {
