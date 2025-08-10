@@ -48,14 +48,14 @@ export const clientLoader = async () => {
         allUsers: mappedUsers
     }
 }
-    
+
 
 const Dashboard = ({ loaderData }: Route.ComponentProps) => {
 
     const user = loaderData.user as User | null;
     const { dashboardStats, allTrips, userGrowth, tripsByTravelStyle, allUsers } = loaderData;
 
-     const trips = allTrips.map((trip) => ({
+    const trips = allTrips.map((trip) => ({
         imageUrl: trip.imageUrls[0],
         name: trip.name,
         interest: trip.interests,
@@ -130,7 +130,7 @@ const Dashboard = ({ loaderData }: Route.ComponentProps) => {
                     primaryXAxis={userXAxis}
                     primaryYAxis={useryAxis}
                     title="User Growth"
-                    tooltip={{ enable: true}}
+                    tooltip={{ enable: true }}
                 >
                     <Inject services={[ColumnSeries, SplineAreaSeries, Category, DataLabel, Tooltip]} />
 
@@ -142,7 +142,7 @@ const Dashboard = ({ loaderData }: Route.ComponentProps) => {
                             type="Column"
                             name="Column"
                             columnWidth={0.3}
-                            cornerRadius={{topLeft: 10, topRight: 10}}
+                            cornerRadius={{ topLeft: 10, topRight: 10 }}
                         />
 
                         <SeriesDirective
@@ -152,7 +152,7 @@ const Dashboard = ({ loaderData }: Route.ComponentProps) => {
                             type="SplineArea"
                             name="Wave"
                             fill="rgba(71, 132, 238, 0.3)"
-                            border={{ width: 2, color: '#4784EE'}}
+                            border={{ width: 2, color: '#4784EE' }}
                         />
                     </SeriesCollectionDirective>
                 </ChartComponent>
@@ -162,7 +162,7 @@ const Dashboard = ({ loaderData }: Route.ComponentProps) => {
                     primaryXAxis={tripXAxis}
                     primaryYAxis={tripyAxis}
                     title="Trip Trends"
-                    tooltip={{ enable: true}}
+                    tooltip={{ enable: true }}
                 >
                     <Inject services={[ColumnSeries, SplineAreaSeries, Category, DataLabel, Tooltip]} />
 
@@ -174,14 +174,14 @@ const Dashboard = ({ loaderData }: Route.ComponentProps) => {
                             type="Column"
                             name="day"
                             columnWidth={0.3}
-                            cornerRadius={{topLeft: 10, topRight: 10}}
+                            cornerRadius={{ topLeft: 10, topRight: 10 }}
                         />
                     </SeriesCollectionDirective>
                 </ChartComponent>
             </section>
-            
+
             <section className="user-trip wrapper">
-                {usersAndTrips.map(({ title, dataSource, field, headerText}, i) => (
+                {usersAndTrips.map(({ title, dataSource, field, headerText }, i) => (
                     <div key={i} className="flex flex-col gap-5">
                         <h3 className="p-20-semibold text-dark-100">{title}</h3>
 

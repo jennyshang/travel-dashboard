@@ -2,24 +2,25 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { ID } from "appwrite";
 import { data, type ActionFunctionArgs } from "react-router"
 import { appwriteConfig, database } from "~/appwrite/client";
-import { parseMarkdownToJson } from "~/lib/utils";
+import { parseMarkdownToJson, parseTripData } from "~/lib/utils";
+import { createProduct } from "~/lib/stripe";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
-    const {
-        country,
-        numberOfDays,
-        travelStyle,
-        interests,
-        budget,
-        groupType,
-        userId,
-    } = await request.json();
+  const {
+    country,
+    numberOfDays,
+    travelStyle,
+    interests,
+    budget,
+    groupType,
+    userId,
+  } = await request.json();
 
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
-    const unsplashApiKey = process.env.UNSPLASH_ACCESS_KEY!;
+  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+  const unsplashApiKey = process.env.UNSPLASH_ACCESS_KEY!;
 
-    try {
-        const prompt = `Generate a ${numberOfDays}-day travel itinerary for ${country} based on the following user information:
+  try {
+    const prompt = `Generate a ${numberOfDays}-day travel itinerary for ${country} based on the following user information:
     Budget: '${budget}'
     Interests: '${interests}'
     TravelStyle: '${travelStyle}'
@@ -57,42 +58,61 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       "day": 1,
       "location": "City/Region Name",
       "activities": [
-        {"time": "Morning", "description": "🏰 Visit the local historic castle and enjoy a scenic walk"},
-        {"time": "Afternoon", "description": "🖼️ Explore a famous art museum with a guided tour"},
-        {"time": "Evening", "description": "🍷 Dine at a rooftop restaurant with local wine"}
+        {"time": "Morning", "description": "Experience the historic grandeur of the University of Oxford, one of the world's oldest universities, and explore its impressive collection of colleges and buildings."},
+        {"time": "Afternoon", "description": "Visit Christ Church, a constituent college of the University of Oxford, renowned for its architectural beauty and association with the Harry Potter film series. "},
+        {"time": "Evening", "description": "Explore the Cambridge University Botanic Garden, a haven of diverse plant life where you can enjoy a tranquil setting amidst a rich collection of species. "}
       ]
     },
     ...
     ]
     }`;
 
-        const textResult = await genAI
-            .getGenerativeModel({ model: 'gemini-2.0-flash' })
-            .generateContent([prompt])
+    const textResult = await genAI
+      .getGenerativeModel({ model: 'gemini-2.5-flash' })
+      .generateContent([prompt])
 
-        const trip = parseMarkdownToJson(textResult.response.text());
+    const trip = parseMarkdownToJson(textResult.response.text());
 
-        const imageResponse = await fetch(
-            `https://api.unsplash.com/search/photos?query=${country} ${interests} ${travelStyle}&client_id=${unsplashApiKey}`
-        )
+    const imageResponse = await fetch(
+      `https://api.unsplash.com/search/photos?query=${country} ${interests} ${travelStyle}&client_id=${unsplashApiKey}`
+    )
 
-        const imageUrls = (await imageResponse.json()).results.slice(0, 3)
-            .map((result: any) => result.urls?.regular || null);
+    const imageUrls = (await imageResponse.json()).results.slice(0, 3)
+      .map((result: any) => result.urls?.regular || null);
 
-        const result = await database.createDocument(
-            appwriteConfig.databaseId,
-            appwriteConfig.tripCollectionId,
-            ID.unique(),
-            {
-                tripDetail: JSON.stringify(trip),
-                createdAt: new Date().toISOString(),
-                imageUrls,
-                userId
-            }
-        )
-        return data({ id: result.$id })
+    const result = await database.createDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.tripCollectionId,
+      ID.unique(),
+      {
+        tripDetail: JSON.stringify(trip),
+        createdAt: new Date().toISOString(),
+        imageUrls,
+        userId
+      }
+    )
+    const tripDetail = parseTripData(result.tripDetails) as Trip;
+    const tripPrice = parseInt(tripDetail.estimatedPrice.replace('$', ''), 10)
+    const paymentLink = await createProduct(
+      tripDetail.name,
+      tripDetail.description,
+      imageUrls,
+      tripPrice,
+      result.$id
+    )
 
-    } catch (e) {
-        console.error('Error generating travel plan: ', e);
-    }
+    await database.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.tripCollectionId,
+      result.$id,
+      {
+        payment_link: paymentLink.url
+      }
+    )
+
+    return data({ id: result.$id })
+
+  } catch (e) {
+    console.error('Error generating travel plan: ', e);
+  }
 }
