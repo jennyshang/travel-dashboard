@@ -29,6 +29,5 @@ export const createProduct = async (
             }
         }
     })
-    console.log('stripe paymentLink:', paymentLink);
     return paymentLink;
 }

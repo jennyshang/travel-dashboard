@@ -8,7 +8,7 @@ import { allTrips } from "~/constants";
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
     const { tripId } = params;
-    if(!tripId) throw new Error ('Trip ID is required');
+    if (!tripId) throw new Error('Trip ID is required');
 
     const [trip, trips] = await Promise.all([
         getTripById(tripId),
@@ -42,8 +42,8 @@ const TripDetail = ({ loaderData }: Route.ComponentProps) => {
     ]
 
     const visitTimeAndWeatherInfo = [
-        {title: 'Best Time to Visit', items: bestTimeToVisit},
-        {title: 'Weather:', items: weatherInfo}
+        { title: 'Best Time to Visit', items: bestTimeToVisit },
+        { title: 'Weather:', items: weatherInfo }
     ]
     return (
         <main className="travel-detail wrapper">
@@ -58,16 +58,17 @@ const TripDetail = ({ loaderData }: Route.ComponentProps) => {
                             image="/assets/icons/calendar.svg"
                         />
                         <InfoPill
-                            text={
-                                itinerary
-                                    ?.map(item => item.location)
-                                    .filter(city => city && city.trim() !== "") // remove null/empty
-                                    .filter((city, idx, arr) =>
-                                        arr.findIndex(c => c.trim().toLowerCase() === city.trim().toLowerCase()) === idx
-                                    )
-                                    .slice(0, 3) // take only the first 3 unique cities
-                                    .join(', ') || ""
-                            }
+                            // text={
+                            //     itinerary
+                            //         ?.map(item => item.location)
+                            //         .filter(city => city && city.trim() !== "") // remove null/empty
+                            //         .filter((city, idx, arr) =>
+                            //             arr.findIndex(c => c.trim().toLowerCase() === city.trim().toLowerCase()) === idx
+                            //         )
+                            //         .slice(0, 3) // take only the first 3 unique cities
+                            //         .join(', ') || ""
+                            // }
+                            text={`${country}`}
                             image="/assets/icons/location-mark.svg"
                         />
                     </div>
@@ -136,25 +137,25 @@ const TripDetail = ({ loaderData }: Route.ComponentProps) => {
 
                 <p className="text-sm md:text-lg font-normal text-dark-400">{description}</p>
                 <ul className="itinerary">
-                    {itinerary?.map((dayPlan: DayPlan, index: number) => (
-                        <li key={index}>
-                            <h3>
-                                Day {dayPlan.day}: {dayPlan.location}
-                            </h3>
+                        {itinerary?.map((dayPlan: DayPlan, index: number) => (
+                            <li key={index}>
+                                <h3>
+                                    Day {dayPlan.day}: {dayPlan.location}
+                                </h3>
 
-                            <ul>
-                                {dayPlan.activities.map((activity, index: number) => (
-                                    <li key={index}>
-                                        <span className="flex-shring-0 p-18-semibold">{activity.time}</span>
-                                        <p className="flex-grow">{activity.description}</p>
-                                    </li>
-                                ))}
-                            </ul>
-                        </li>
-                    ))}
-                </ul>
+                                <ul>
+                                    {dayPlan.activities.map((activity, index: number) => (
+                                        <li key={index}>
+                                            <span className="flex-shring-0 p-18-semibold">{activity.time}</span>
+                                            <p className="flex-grow">{activity.description}</p>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </li>
+                        ))}
+                    </ul>
 
-                  {visitTimeAndWeatherInfo.map((section) => (
+                {visitTimeAndWeatherInfo.map((section) => (
                     <section key={section.title} className="visit">
                         <div>
                             <h3>{section.title}</h3>
@@ -171,7 +172,7 @@ const TripDetail = ({ loaderData }: Route.ComponentProps) => {
                 ))}
 
             </section>
-            
+
             <section className="flex flex-col gap-6">
                 <h2 className="p-24-semibold text-dark-100">Popular Trips</h2>
 

@@ -25,7 +25,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     Interests: '${interests}'
     TravelStyle: '${travelStyle}'
     GroupType: '${groupType}'
-    Return the itinerary and lowest estimated price in a clean, non-markdown JSON format with the following structure:
+    Return the itinerary and lowest estimated price. You are to output ONLY valid JSON and nothing else.
+Format exactly as in the schema provided.
+Do not include any markdown, explanations, or extra text.
+Schema:
     {
     "name": "A descriptive title for the trip",
     "description": "A brief description of the trip and its highlights not exceeding 100 words",
@@ -58,9 +61,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       "day": 1,
       "location": "City/Region Name",
       "activities": [
-        {"time": "Morning", "description": "Experience the historic grandeur of the University of Oxford, one of the world's oldest universities, and explore its impressive collection of colleges and buildings."},
-        {"time": "Afternoon", "description": "Visit Christ Church, a constituent college of the University of Oxford, renowned for its architectural beauty and association with the Harry Potter film series. "},
-        {"time": "Evening", "description": "Explore the Cambridge University Botanic Garden, a haven of diverse plant life where you can enjoy a tranquil setting amidst a rich collection of species. "}
+        {"time": "Morning", "description": "🏫Experience the historic grandeur of the University of Oxford, one of the world's oldest universities, and explore its impressive collection of colleges and buildings."},
+        {"time": "Afternoon", "description": "⛪Visit Christ Church, a constituent college of the University of Oxford, renowned for its architectural beauty and association with the Harry Potter film series. "},
+        {"time": "Evening", "description": "🪻Explore the Cambridge University Botanic Garden, a haven of diverse plant life where you can enjoy a tranquil setting amidst a rich collection of species. "},
       ]
     },
     ...
@@ -91,7 +94,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         userId
       }
     )
-    const tripDetail = parseTripData(result.tripDetails) as Trip;
+    const tripDetail = parseTripData(result.tripDetail) as Trip;
     const tripPrice = parseInt(tripDetail.estimatedPrice.replace('$', ''), 10)
     const paymentLink = await createProduct(
       tripDetail.name,

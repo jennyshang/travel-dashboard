@@ -68,16 +68,17 @@ const TravelDetail = ({ loaderData }: Route.ComponentProps) => {
                             />
 
                             <InfoPill
-                                text={
-                                    itinerary
-                                        ?.map(item => item.location)
-                                        .filter(city => city && city.trim() !== "") // remove null/empty
-                                        .filter((city, idx, arr) =>
-                                            arr.findIndex(c => c.trim().toLowerCase() === city.trim().toLowerCase()) === idx
-                                        )
-                                        .slice(0, 3) // take only the first 3 unique cities
-                                        .join(', ') || ""
-                                }
+                                // text={
+                                //     itinerary
+                                //         ?.map(item => item.location)
+                                //         .filter(city => city && city.trim() !== "") // remove null/empty
+                                //         .filter((city, idx, arr) =>
+                                //             arr.findIndex(c => c.trim().toLowerCase() === city.trim().toLowerCase()) === idx
+                                //         )
+                                //         .slice(0, 3) // take only the first 3 unique cities
+                                //         .join(', ') || ""
+                                // }
+                                text={`${country}`}
                                 image="/assets/icons/location-mark.svg"
                             />
                         </div>
@@ -145,7 +146,7 @@ const TravelDetail = ({ loaderData }: Route.ComponentProps) => {
 
                     <p className="text-sm md:text-lg font-normal text-dark-400">{description}</p>
 
-                    <ul className="itinerary">
+                 <ul className="itinerary">
                         {itinerary?.map((dayPlan: DayPlan, index: number) => (
                             <li key={index}>
                                 <h3>
@@ -164,6 +165,7 @@ const TravelDetail = ({ loaderData }: Route.ComponentProps) => {
                         ))}
                     </ul>
 
+
                     {visitTimeAndWeatherInfo.map((section) => (
                         <section key={section.title} className="visit">
                             <div>
@@ -179,7 +181,7 @@ const TravelDetail = ({ loaderData }: Route.ComponentProps) => {
                             </div>
                         </section>
                     ))}
-                    
+
                     <a href={paymentLink} className="flex">
                         <ButtonComponent className="button-class" type="submit">
                             <span className="p-16-semibold text-white">
