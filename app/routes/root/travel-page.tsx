@@ -1,14 +1,17 @@
+// routes/travels/travel-page.tsx
 import { Link, type LoaderFunctionArgs, useSearchParams } from "react-router";
 import { ButtonComponent } from "@syncfusion/ej2-react-buttons";
 import { cn, parseTripData } from "~/lib/utils";
 import { Header, TripCard } from "../../../components";
 import { getAllTrips } from "~/appwrite/trips";
 import type { Route } from "../../../.react-router/types/app/routes/admin/+types/trips";
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { getUser } from "~/appwrite/auth";
 import { PagerComponent } from "@syncfusion/ej2-react-grids";
+import { account } from "~/appwrite/client";
+import { useSavedTrips} from "~/appwrite/trips"
 
-const FeaturedDestination = ({ containerClass = '', bigCard = false, rating, title, activityCount, bgImage }: DestinationProps) => (
+const FeaturedDestination = ({ containerClass = '', bigCard = false, rating, title, activityCount, bgImage }: any) => (
   <section className={cn('rounded-[14px] overflow-hidden bg-cover bg-center size-full min-w-[280px]', containerClass, bgImage)}>
     <div className="bg-linear200 h-full">
       <article className="featured-card">
@@ -55,7 +58,29 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 }
 
 const TravelPage = ({ loaderData }: Route.ComponentProps) => {
-  const trips = loaderData.trips as Trip[] | [];
+  // loaderData should include trips (same pattern as your other pages)
+  const initialTrips = loaderData.trips as Trip[] | [];
+
+  const [trips] = useState<Trip[]>(initialTrips);
+
+  // useSavedTrips hook provides savedTrips state and helpers (moved to routes/travels/trips.ts)
+  const {
+    userId: _userId,
+    savedMap,
+    savedTrips,
+    savingMap,
+    toggleSave,
+    savedContainerRef,
+    showLeftArrow,
+    showRightArrow,
+    scrollNext,
+    scrollPrev,
+  } = useSavedTrips();
+
+  useEffect(() => {
+    // keep account to ensure SSR/CSR consistency if you had logic that depended on it
+    // (left intentionally minimal — useSavedTrips handles account.get)
+  }, []);
 
   const [searchParams] = useSearchParams();
   const initialPage = Number(searchParams.get('page') || '1')
@@ -150,8 +175,72 @@ const TravelPage = ({ loaderData }: Route.ComponentProps) => {
         </div>
       </section>
 
-      <section id="trips" className="py-20 wrapper flex flex-col gap-10">
-        <Header title="Discover your new favorite destination" description="Browse well-planned trips designes for your travel style" />
+      {/* Saved trips section rendered as a horizontal carousel (adaptive widths) */}
+      {savedTrips.length > 0 && (
+        <section className="mb-8 relative wrapper flex flex-col gap-10 mt-25">
+          <Header
+            title="Your Saved Trips"
+            description="Trips you've saved to revisit later"
+          />
+
+          {/* carousel container */}
+          <div className="relative">
+            {/* hidden on small if you prefer; we keep it always visible */}
+            <div
+              ref={savedContainerRef}
+              className="saved-carousel flex overflow-x-auto overflow-y-visible scroll-smooth no-scrollbar py-2 -mx-2 "
+              // style note: -mx-2 + px on items make consistent gutters
+            >
+              {savedTrips.map((trip) => (
+                <div
+                  key={trip.id}
+                  className="flex-shrink-0 w-full sm:w-1/2 md:w-1/3 lg:w-1/4 px-2"
+                >
+                  <TripCard
+                    id={trip.id}
+                    name={trip.name}
+                    imageUrl={trip.imageUrls?.[0]}
+                    location={trip.itinerary?.[0]?.location ?? ""}
+                    tags={[trip.interests ?? "", trip.travelStyle ?? ""]}
+                    price={trip.estimatedPrice}
+                    // allow unsave directly from saved list
+                    onToggleSave={() => toggleSave(trip.id)}
+                    isSaved={Boolean(savedMap[trip.id])}
+                    saving={Boolean(savingMap[trip.id])}
+                  />
+                </div>
+              ))}
+            </div>
+
+            {/* Left / Right arrow buttons */}
+            {showLeftArrow && (
+              <button
+                onClick={scrollPrev}
+                aria-label="Scroll left"
+                className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-white shadow flex items-center justify-center focus:outline-none"
+              >
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M15 6 L9 12 L15 18" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+            )}
+
+            {showRightArrow && (
+              <button
+                onClick={scrollNext}
+                aria-label="Scroll right"
+                className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-white shadow flex items-center justify-center focus:outline-none"
+              >
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M9 6 L15 12 L9 18" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+            )}
+          </div>
+        </section>
+      )}
+    <section id="trips" className="py-20 wrapper flex flex-col gap-10" style={{ paddingTop: "50px" }}>
+        <Header title="Explore Trips" description="Browse and save trips you like" />
 
         <div className="trip-grid">
           {trips.map((trip) => (
@@ -159,10 +248,14 @@ const TravelPage = ({ loaderData }: Route.ComponentProps) => {
               key={trip.id}
               id={trip.id}
               name={trip.name}
-              imageUrl={trip.imageUrls[0]}
+              imageUrl={trip.imageUrls?.[0]}
               location={trip.itinerary?.[0]?.location ?? ""}
-              tags={[trip.interests, trip.travelStyle]}
+              tags={[trip.interests ?? "", trip.travelStyle ?? ""]}
               price={trip.estimatedPrice}
+              // pass save toggling only for user-facing pages (admin pages won't pass this)
+              onToggleSave={() => toggleSave(trip.id)}
+              isSaved={Boolean(savedMap[trip.id])}
+              saving={Boolean(savingMap[trip.id])}
             />
           ))}
         </div>

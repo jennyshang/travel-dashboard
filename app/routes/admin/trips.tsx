@@ -1,6 +1,6 @@
 import { useSearchParams, type LoaderFunctionArgs } from "react-router";
 import { Header, TripCard } from "../../../components";
-import { getAllTrips, getTripById } from "~/appwrite/trips";
+import { getAllTrips, deleteTrip } from "~/appwrite/trips";
 import { parseTripData } from "~/lib/utils";
 import type { Route } from "./+types/trips";
 import { useState } from "react";
@@ -24,18 +24,38 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   }
 }
 
+
+
 const Trips = ({ loaderData }: Route.ComponentProps) => {
-  const trips = loaderData.trips as Trip[] | [];
+  const initialTrips = loaderData.trips as Trip[] | [];
+  const [trips, setTrips] = useState<Trip[]>(initialTrips);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const [searchParams] = useSearchParams();
   const initialPage = Number(searchParams.get('page') || '1')
-
   const [currentPage, setCurrentPage] = useState(initialPage);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     window.location.search = `?page=${page}`
   }
+
+  const handleDelete = async (id: string) => {
+    const ok = window.confirm("Delete this trip? This action cannot be undone.");
+    if (!ok) return;
+
+    try {
+      setDeletingId(id);
+      await deleteTrip(id);
+      setTrips(prev => prev.filter(t => t.id !== id));
+    } catch (err) {
+      console.error("Failed to delete trip", err);
+      // replace with your toast if you have one
+      alert("Failed to delete trip. Please try again.");
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   return (
     <main className="all-users wrapper">
@@ -57,10 +77,12 @@ const Trips = ({ loaderData }: Route.ComponentProps) => {
               key={trip.id}
               id={trip.id}
               name={trip.name}
-              imageUrl={trip.imageUrls[0]}
+              imageUrl={trip.imageUrls?.[0]}
               location={trip.itinerary?.[0]?.location ?? ""}
-              tags={[trip.interests, trip.travelStyle]}
+              tags={[trip.interests ?? "", trip.travelStyle ?? ""]}
               price={trip.estimatedPrice}
+              onDelete={() => handleDelete(trip.id)}
+              deleting={deletingId === trip.id}
             />
           ))}
         </div>
@@ -72,10 +94,7 @@ const Trips = ({ loaderData }: Route.ComponentProps) => {
           click={(args) => handlePageChange(args.currentPage)}
           cssClass="!mb-4"
         />
-
       </section>
-
-
     </main>
   )
 }

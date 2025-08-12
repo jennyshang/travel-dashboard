@@ -81,6 +81,14 @@ declare interface TripCardProps {
   imageUrl: string;
   tags: string[];
   price: string;
+  // admin-only delete (existing)
+  onDelete?: () => void;
+  deleting?: boolean;
+  // user-facing save/like
+  onToggleSave?: () => void;
+  isSaved?: boolean;
+  saving?: boolean;
+
 }
 
 declare interface StatsCard {
