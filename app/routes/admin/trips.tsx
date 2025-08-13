@@ -1,10 +1,11 @@
 import { useSearchParams, type LoaderFunctionArgs } from "react-router";
-import { Header, TripCard } from "../../../components";
+import { Header, SearchBar, TripCard } from "../../../components";
 import { getAllTrips, deleteTrip } from "~/appwrite/trips";
 import { parseTripData } from "~/lib/utils";
 import type { Route } from "./+types/trips";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { PagerComponent } from "@syncfusion/ej2-react-grids";
+import { filterTrips } from "~/appwrite/filterTrips";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const limit = 8;
@@ -29,6 +30,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 const Trips = ({ loaderData }: Route.ComponentProps) => {
   const initialTrips = loaderData.trips as Trip[] | [];
   const [trips, setTrips] = useState<Trip[]>(initialTrips);
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const filtered = useMemo(() => filterTrips(trips, searchQuery), [trips, searchQuery]);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const [searchParams] = useSearchParams();
@@ -71,8 +74,13 @@ const Trips = ({ loaderData }: Route.ComponentProps) => {
           Manage Created Trips
         </h1>
 
+
+        <div className="mb-6 w-80 mt-4">
+          <SearchBar value={searchQuery} onChange={(v) => setSearchQuery(v)} placeholder="Search trips to manage..." />
+        </div>
+
         <div className="trip-grid mb-4">
-          {trips.map((trip) => (
+          {filtered.map((trip) => (
             <TripCard
               key={trip.id}
               id={trip.id}
@@ -85,6 +93,7 @@ const Trips = ({ loaderData }: Route.ComponentProps) => {
               deleting={deletingId === trip.id}
             />
           ))}
+
         </div>
 
         <PagerComponent

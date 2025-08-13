@@ -2,14 +2,15 @@
 import { Link, type LoaderFunctionArgs, useSearchParams } from "react-router";
 import { ButtonComponent } from "@syncfusion/ej2-react-buttons";
 import { cn, parseTripData } from "~/lib/utils";
-import { Header, TripCard } from "../../../components";
+import { Header, SearchBar, TripCard } from "../../../components";
 import { getAllTrips } from "~/appwrite/trips";
 import type { Route } from "../../../.react-router/types/app/routes/admin/+types/trips";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { getUser } from "~/appwrite/auth";
 import { PagerComponent } from "@syncfusion/ej2-react-grids";
 import { account } from "~/appwrite/client";
-import { useSavedTrips} from "~/appwrite/trips"
+import { useSavedTrips} from "~/appwrite/trips";
+import { filterTrips } from '~/appwrite/filterTrips';
 
 const FeaturedDestination = ({ containerClass = '', bigCard = false, rating, title, activityCount, bgImage }: any) => (
   <section className={cn('rounded-[14px] overflow-hidden bg-cover bg-center size-full min-w-[280px]', containerClass, bgImage)}>
@@ -62,8 +63,8 @@ const TravelPage = ({ loaderData }: Route.ComponentProps) => {
   const initialTrips = loaderData.trips as Trip[] | [];
 
   const [trips] = useState<Trip[]>(initialTrips);
-
-  // useSavedTrips hook provides savedTrips state and helpers (moved to routes/travels/trips.ts)
+  
+  // useSavedTrips hook provides savedTrips state and helpers 
   const {
     userId: _userId,
     savedMap,
@@ -91,6 +92,12 @@ const TravelPage = ({ loaderData }: Route.ComponentProps) => {
     setCurrentPage(page);
     window.location.search = `?page=${page}`
   }
+
+  // Shared search to filter both saved and explore lists
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const filteredSaved = useMemo(() => filterTrips(savedTrips, searchQuery), [savedTrips, searchQuery]);
+  const filteredExplore = useMemo(() => filterTrips(trips, searchQuery), [trips, searchQuery]);
+  
 
   return (
     <main className="flex flex-col">
@@ -120,6 +127,8 @@ const TravelPage = ({ loaderData }: Route.ComponentProps) => {
 
       <section className="pt-20 wrapper flex flex-col gap-10 h-full">
         <Header title="Featured Travel Destinations" description="Check out some of the best places you visit around the world" />
+        
+
         <div className="featured">
           <article>
             <FeaturedDestination
@@ -175,9 +184,13 @@ const TravelPage = ({ loaderData }: Route.ComponentProps) => {
         </div>
       </section>
 
+      <div className="mt-30 w-full max-w-4xl mx-auto">
+          <SearchBar value={searchQuery} onChange={(v) => setSearchQuery(v)} placeholder="Search saved and explore trips..." />
+        </div>
+
       {/* Saved trips section rendered as a horizontal carousel (adaptive widths) */}
       {savedTrips.length > 0 && (
-        <section className="mb-8 relative wrapper flex flex-col gap-10 mt-25">
+        <section className="mb-8 relative wrapper flex flex-col gap-10 mt-10">
           <Header
             title="Your Saved Trips"
             description="Trips you've saved to revisit later"
@@ -191,7 +204,7 @@ const TravelPage = ({ loaderData }: Route.ComponentProps) => {
               className="saved-carousel flex overflow-x-auto overflow-y-visible scroll-smooth no-scrollbar py-2 -mx-2 "
               // style note: -mx-2 + px on items make consistent gutters
             >
-              {savedTrips.map((trip) => (
+              {filteredSaved.map((trip) => (
                 <div
                   key={trip.id}
                   className="flex-shrink-0 w-full sm:w-1/2 md:w-1/3 lg:w-1/4 px-2"
@@ -243,7 +256,7 @@ const TravelPage = ({ loaderData }: Route.ComponentProps) => {
         <Header title="Explore Trips" description="Browse and save trips you like" />
 
         <div className="trip-grid">
-          {trips.map((trip) => (
+          {filteredExplore.map((trip) => (
             <TripCard
               key={trip.id}
               id={trip.id}

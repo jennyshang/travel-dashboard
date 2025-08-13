@@ -1,6 +1,7 @@
 import { getAllUsers, getUser } from '~/appwrite/auth';
 import { Header, StatsCard, TripCard, SearchBar } from '../../../components';
 import React, { useMemo, useState } from 'react';
+import { filterTrips } from '~/appwrite/filterTrips';
 import type { Route } from './+types/dashboard'
 import { getTripsByTravelStyle, getTripsCreatedPerDay, getUserGrowthPerDay, getUsersAndTripsStats, getActiveUserGrowthPerDay } from '~/appwrite/dashboard';
 import { getAllTrips } from '~/appwrite/trips';
@@ -78,29 +79,7 @@ const Dashboard = ({ loaderData }: Route.ComponentProps) => {
     // Quick search state (admin)
     const [searchQuery, setSearchQuery] = useState<string>('');
 
-    const filteredTrips = useMemo(() => {
-        const q = (searchQuery || '').trim().toLowerCase();
-        if (!q) return trips;
-
-        return trips.filter((t) => {
-            // Safely build a single searchable string from the trip object
-            const itineraryLocations = Array.isArray(t.itinerary)
-                ? t.itinerary.map((it: any) => (it.location ?? it.country ?? '')).join(' ')
-                : '';
-
-            const fields = [
-                String(t.name ?? ''),
-                String(t.interest ?? ''),
-                String(t.travelStyle ?? ''),
-                String(t.estimatedPrice ?? ''),
-                String(t.duration ?? ''),
-                String(t.groupType ?? ''),
-                itineraryLocations,
-            ].join(' ').toLowerCase();
-
-            return fields.indexOf(q) !== -1;
-        });
-    }, [trips, searchQuery]);
+    const filteredTrips = useMemo(() => filterTrips(trips, searchQuery), [trips, searchQuery]);
 
     const usersAndTrips = [
         {
