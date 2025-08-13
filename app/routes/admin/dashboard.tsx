@@ -1,6 +1,6 @@
 import { getAllUsers, getUser } from '~/appwrite/auth';
-import { Header, StatsCard, TripCard } from '../../../components';
-
+import { Header, StatsCard, TripCard, SearchBar } from '../../../components';
+import React, { useMemo, useState } from 'react';
 import type { Route } from './+types/dashboard'
 import { getTripsByTravelStyle, getTripsCreatedPerDay, getUserGrowthPerDay, getUsersAndTripsStats, getActiveUserGrowthPerDay } from '~/appwrite/dashboard';
 import { getAllTrips } from '~/appwrite/trips';
@@ -64,10 +64,43 @@ const Dashboard = ({ loaderData }: Route.ComponentProps) => {
     const { dashboardStats, allTrips, userGrowth, tripsByTravelStyle, allUsers } = loaderData;
 
     const trips = allTrips.map((trip) => ({
+        id: trip.id,
         imageUrl: trip.imageUrls[0],
         name: trip.name,
         interest: trip.interests,
-    }))
+        travelStyle: trip.travelStyle,
+        estimatedPrice: trip.estimatedPrice,
+        itinerary: trip.itinerary,
+        duration: trip.duration ?? null,
+        groupType: (trip.groupType as string) ?? '',
+    }));
+
+    // Quick search state (admin)
+    const [searchQuery, setSearchQuery] = useState<string>('');
+
+    const filteredTrips = useMemo(() => {
+        const q = (searchQuery || '').trim().toLowerCase();
+        if (!q) return trips;
+
+        return trips.filter((t) => {
+            // Safely build a single searchable string from the trip object
+            const itineraryLocations = Array.isArray(t.itinerary)
+                ? t.itinerary.map((it: any) => (it.location ?? it.country ?? '')).join(' ')
+                : '';
+
+            const fields = [
+                String(t.name ?? ''),
+                String(t.interest ?? ''),
+                String(t.travelStyle ?? ''),
+                String(t.estimatedPrice ?? ''),
+                String(t.duration ?? ''),
+                String(t.groupType ?? ''),
+                itineraryLocations,
+            ].join(' ').toLowerCase();
+
+            return fields.indexOf(q) !== -1;
+        });
+    }, [trips, searchQuery]);
 
     const usersAndTrips = [
         {
@@ -117,21 +150,36 @@ const Dashboard = ({ loaderData }: Route.ComponentProps) => {
                 </div>
             </section>
 
-            <section className="container">
-                <h1 className="text-xl font-semibold text-dark-100">Created Trips</h1>
+        <section className="container">
+                <div className="flex items-center justify-between mb-4">
+                    <h1 className="text-xl font-semibold text-dark-100">Created Trips</h1>
+                    <div className="w-80">
+                        <SearchBar
+                            value={searchQuery}
+                            onChange={(v) => setSearchQuery(v)}
+                            placeholder="Search trips by name, country, price, duration, interests, group..."
+                        />
+                    </div>
+                </div>
 
                 <div className="trip-grid">
-                    {allTrips.map((trip) => (
-                        <TripCard
-                            key={trip.id}
-                            id={trip.id.toString()}
-                            name={trip.name!}
-                            imageUrl={trip.imageUrls[0]}
-                            location={trip.itinerary?.[0]?.location ?? ''}
-                            tags={[trip.interests!, trip.travelStyle!]}
-                            price={trip.estimatedPrice!}
-                        />
-                    ))}
+                    {filteredTrips.length > 0 ? (
+                        filteredTrips.map((trip) => (
+                            <TripCard
+                                key={trip.id}
+                                id={trip.id.toString()}
+                                name={trip.name!}
+                                imageUrl={trip.imageUrl}
+                                location={trip.itinerary?.[0]?.location ?? ''}
+                                tags={[trip.interest ?? '', trip.travelStyle ?? '']}
+                                price={trip.estimatedPrice!}
+                            />
+                        ))
+                    ) : (
+                        <div className="py-12 text-center w-full col-span-full">
+                            <p className="text-sm text-gray-300">No search results found — try a different query.</p>
+                        </div>
+                    )}
                 </div>
             </section>
 
