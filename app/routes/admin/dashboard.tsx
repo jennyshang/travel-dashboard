@@ -2,7 +2,7 @@ import { getAllUsers, getUser } from '~/appwrite/auth';
 import { Header, StatsCard, TripCard } from '../../../components';
 
 import type { Route } from './+types/dashboard'
-import { getTripsByTravelStyle, getUserGrowthPerDay, getUsersAndTripsStats } from '~/appwrite/dashboard';
+import { getTripsByTravelStyle, getTripsCreatedPerDay, getUserGrowthPerDay, getUsersAndTripsStats, getActiveUserGrowthPerDay } from '~/appwrite/dashboard';
 import { getAllTrips } from '~/appwrite/trips';
 import { parseTripData } from '~/lib/utils';
 import { Category, ChartComponent, ColumnDirective, ColumnsDirective, ColumnSeries, DataLabel, Inject, SeriesCollectionDirective, SeriesDirective, SplineAreaSeries, Tooltip } from '@syncfusion/ej2-react-charts';
@@ -18,36 +18,44 @@ export const clientLoader = async () => {
         userGrowth,
         tripsByTravelStyle,
         allUsers,
+        tripsGrowth,
+        activeUserGrowth
     ] = await Promise.all([
-        await getUser(),
-        await getUsersAndTripsStats(),
-        await getAllTrips(4, 0),
-        await getUserGrowthPerDay(),
-        await getTripsByTravelStyle(),
-        await getAllUsers(4, 0),
-    ])
+        getUser(),
+        getUsersAndTripsStats(),
+        getAllTrips(4, 0),
+        getUserGrowthPerDay(),
+        getTripsByTravelStyle(),
+        getAllUsers(4, 0),
+        getTripsCreatedPerDay(),
+        getActiveUserGrowthPerDay()
+    ]);
 
-    const allTrips = trips.allTrips.map(({ $id, tripDetail, imageUrls }) => ({
-        id: $id,
-        ...parseTripData(tripDetail),
-        imageUrls: imageUrls ?? []
-    }))
-
-    const mappedUsers: UsersItineraryCount[] = allUsers.users.map((user) => ({
-        imageUrl: user.imageUrl,
-        name: user.name,
-        count: user.itineraryCount ?? Math.floor(Math.random() * 10),
-    }))
+    // Format sparkline data
+    const userGrowthData = userGrowth.map((d) => ({ x: d.day, y: d.count }));
+    const tripsGrowthData = tripsGrowth.map((d) => ({ x: d.day, y: d.count }));
 
     return {
         user,
         dashboardStats,
-        allTrips,
+        allTrips: trips.allTrips.map(({ $id, tripDetail, imageUrls }) => ({
+            id: $id,
+            ...parseTripData(tripDetail),
+            imageUrls: imageUrls ?? []
+        })),
         userGrowth,
         tripsByTravelStyle,
-        allUsers: mappedUsers
-    }
+        allUsers: allUsers.users.map((user) => ({
+            imageUrl: user.imageUrl,
+            name: user.name,
+            count: user.itineraryCount ?? Math.floor(Math.random() * 10),
+        })),
+        userGrowthData: userGrowth.map((d) => ({ x: d.day, y: d.count })),
+        tripsGrowthData: tripsGrowth.map((d) => ({ x: d.day, y: d.count })),
+        activeUserGrowthData: activeUserGrowth.map((d) => ({ x: d.day, y: d.count }))
+    };
 }
+
 
 
 const Dashboard = ({ loaderData }: Route.ComponentProps) => {
@@ -90,18 +98,21 @@ const Dashboard = ({ loaderData }: Route.ComponentProps) => {
                         total={dashboardStats.totalUsers}
                         currentMonthCount={dashboardStats.usersJoined.currentMonth}
                         lastMonthCount={dashboardStats.usersJoined.lastMonth}
+                        trendData={loaderData.userGrowthData}
                     />
                     <StatsCard
                         headerTitle="Total Trips"
                         total={dashboardStats.totalTrips}
                         currentMonthCount={dashboardStats.tripsCreated.currentMonth}
                         lastMonthCount={dashboardStats.tripsCreated.lastMonth}
+                        trendData={loaderData.tripsGrowthData}
                     />
                     <StatsCard
                         headerTitle="Active Users"
-                        total={dashboardStats.userRole.total}
-                        currentMonthCount={dashboardStats.userRole.currentMonth}
-                        lastMonthCount={dashboardStats.userRole.lastMonth}
+        total={dashboardStats.userRole.total}
+        currentMonthCount={dashboardStats.userRole.currentMonth}
+        lastMonthCount={dashboardStats.userRole.lastMonth}
+        trendData={loaderData.activeUserGrowthData}
                     />
                 </div>
             </section>

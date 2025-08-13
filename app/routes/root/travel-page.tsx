@@ -184,7 +184,7 @@ const TravelPage = ({ loaderData }: Route.ComponentProps) => {
           />
 
           {/* carousel container */}
-          <div className="relative">
+          <div className="saved-carousel-wrapper">
             {/* hidden on small if you prefer; we keep it always visible */}
             <div
               ref={savedContainerRef}

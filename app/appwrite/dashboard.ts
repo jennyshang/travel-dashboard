@@ -160,3 +160,31 @@ export const getTripsByTravelStyle = async () => {
         travelStyle,
     }));
 };
+
+export const getActiveUserGrowthPerDay = async () => {
+    const users = await database.listDocuments(
+        appwriteConfig.databaseId,
+        appwriteConfig.userCollectionId
+    );
+
+    // Filter only active "user" roles
+    const activeUsers = users.documents.filter((u: Document) => u.status === 'user');
+
+    const growth = activeUsers.reduce(
+        (acc: { [key: string]: number }, user: Document) => {
+            const date = new Date(user.joinedAt);
+            const day = date.toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+            });
+            acc[day] = (acc[day] || 0) + 1;
+            return acc;
+        },
+        {}
+    );
+
+    return Object.entries(growth).map(([day, count]) => ({
+        count: Number(count),
+        day,
+    }));
+};

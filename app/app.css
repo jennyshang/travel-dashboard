@@ -632,3 +632,15 @@ body {
   display: none;             /* Chrome, Safari, Opera */
 }
 
+.saved-carousel-wrapper {
+  overflow-x: visible;
+  overflow-y: visible;
+}
+
+/* Actual scroll container */
+.saved-carousel {
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+}
+
