@@ -3,9 +3,10 @@ import { cn, getFirstWord } from "~/lib/utils";
 import { ChipListComponent, ChipsDirective, ChipDirective } from '@syncfusion/ej2-react-buttons';
 import * as React from 'react';
 
-const TripCard = ({ id, name, location, imageUrl, tags, price, onDelete, deleting, onToggleSave, isSaved, saving }: TripCardProps) => {
+const TripCard = ({ id, name, location, imageUrl, tags, price, onDelete, deleting, onToggleSave, isSaved, saving, footerContent }: TripCardProps) => {
     const path = useLocation();
     return (
+        <div className="relative">
         <Link to={path.pathname === '/' || path.pathname.startsWith('/travels') ? `/travel/${id}` : `/trips/${id}`} className="trip-card">
 
             {/* only render delete button when onDelete is passed */}
@@ -94,6 +95,8 @@ const TripCard = ({ id, name, location, imageUrl, tags, price, onDelete, deletin
             <article className="tripCard-pill">{price}</article>
 
         </Link>
+        {footerContent}
+        </div>
     )
 }
 

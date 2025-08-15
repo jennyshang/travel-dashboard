@@ -88,7 +88,7 @@ declare interface TripCardProps {
   onToggleSave?: () => void;
   isSaved?: boolean;
   saving?: boolean;
-
+  footerContent?: React.ReactNode
 }
 
 declare interface StatsCard {

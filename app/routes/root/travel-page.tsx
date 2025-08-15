@@ -11,6 +11,8 @@ import { PagerComponent } from "@syncfusion/ej2-react-grids";
 import { account } from "~/appwrite/client";
 import { useSavedTrips} from "~/appwrite/trips";
 import { filterTrips } from '~/appwrite/filterTrips';
+import ReviewsWidgetAppwrite from "components/reviews";
+
 
 const FeaturedDestination = ({ containerClass = '', bigCard = false, rating, title, activityCount, bgImage }: any) => (
   <section className={cn('rounded-[14px] overflow-hidden bg-cover bg-center size-full min-w-[280px]', containerClass, bgImage)}>
@@ -220,6 +222,7 @@ const TravelPage = ({ loaderData }: Route.ComponentProps) => {
                     onToggleSave={() => toggleSave(trip.id)}
                     isSaved={Boolean(savedMap[trip.id])}
                     saving={Boolean(savingMap[trip.id])}
+                    footerContent={<ReviewsWidgetAppwrite tripId={trip.id} />}
                   />
                 </div>
               ))}
@@ -255,6 +258,7 @@ const TravelPage = ({ loaderData }: Route.ComponentProps) => {
     <section id="trips" className="py-20 wrapper flex flex-col gap-10" style={{ paddingTop: "50px" }}>
         <Header title="Explore Trips" description="Browse and save trips you like" />
 
+        
         <div className="trip-grid">
           {filteredExplore.map((trip) => (
             <TripCard
@@ -269,9 +273,11 @@ const TravelPage = ({ loaderData }: Route.ComponentProps) => {
               onToggleSave={() => toggleSave(trip.id)}
               isSaved={Boolean(savedMap[trip.id])}
               saving={Boolean(savingMap[trip.id])}
+              footerContent={<ReviewsWidgetAppwrite tripId={trip.id} />}
             />
           ))}
         </div>
+      
 
         <PagerComponent
           totalRecordsCount={loaderData.total}
