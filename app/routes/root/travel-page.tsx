@@ -9,7 +9,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { getUser } from "~/appwrite/auth";
 import { PagerComponent } from "@syncfusion/ej2-react-grids";
 import { account } from "~/appwrite/client";
-import { useSavedTrips} from "~/appwrite/trips";
+import { useSavedTrips } from "~/appwrite/trips";
 import { filterTrips } from '~/appwrite/filterTrips';
 import ReviewsWidgetAppwrite from "components/reviews";
 
@@ -65,7 +65,7 @@ const TravelPage = ({ loaderData }: Route.ComponentProps) => {
   const initialTrips = loaderData.trips as Trip[] | [];
 
   const [trips] = useState<Trip[]>(initialTrips);
-  
+
   // useSavedTrips hook provides savedTrips state and helpers 
   const {
     userId: _userId,
@@ -99,7 +99,7 @@ const TravelPage = ({ loaderData }: Route.ComponentProps) => {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const filteredSaved = useMemo(() => filterTrips(savedTrips, searchQuery), [savedTrips, searchQuery]);
   const filteredExplore = useMemo(() => filterTrips(trips, searchQuery), [trips, searchQuery]);
-  
+
 
   return (
     <main className="flex flex-col">
@@ -129,7 +129,7 @@ const TravelPage = ({ loaderData }: Route.ComponentProps) => {
 
       <section className="pt-20 wrapper flex flex-col gap-10 h-full">
         <Header title="Featured Travel Destinations" description="Check out some of the best places you visit around the world" />
-        
+
 
         <div className="featured">
           <article>
@@ -187,8 +187,8 @@ const TravelPage = ({ loaderData }: Route.ComponentProps) => {
       </section>
 
       <div className="mt-30 w-full max-w-4xl mx-auto">
-          <SearchBar value={searchQuery} onChange={(v) => setSearchQuery(v)} placeholder="Search saved and explore trips..." />
-        </div>
+        <SearchBar value={searchQuery} onChange={(v) => setSearchQuery(v)} placeholder="Search saved and explore trips..." />
+      </div>
 
       {/* Saved trips section rendered as a horizontal carousel (adaptive widths) */}
       {savedTrips.length > 0 && (
@@ -204,7 +204,7 @@ const TravelPage = ({ loaderData }: Route.ComponentProps) => {
             <div
               ref={savedContainerRef}
               className="saved-carousel flex overflow-x-auto overflow-y-visible scroll-smooth no-scrollbar py-2 -mx-2 "
-              // style note: -mx-2 + px on items make consistent gutters
+            // style note: -mx-2 + px on items make consistent gutters
             >
               {filteredSaved.map((trip) => (
                 <div
@@ -255,10 +255,10 @@ const TravelPage = ({ loaderData }: Route.ComponentProps) => {
           </div>
         </section>
       )}
-    <section id="trips" className="py-20 wrapper flex flex-col gap-10" style={{ paddingTop: "50px" }}>
+      <section id="trips" className="py-20 wrapper flex flex-col gap-10" style={{ paddingTop: "50px" }}>
         <Header title="Explore Trips" description="Browse and save trips you like" />
 
-        
+
         <div className="trip-grid">
           {filteredExplore.map((trip) => (
             <TripCard
@@ -277,7 +277,7 @@ const TravelPage = ({ loaderData }: Route.ComponentProps) => {
             />
           ))}
         </div>
-      
+
 
         <PagerComponent
           totalRecordsCount={loaderData.total}
