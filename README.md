@@ -1,19 +1,30 @@
-# Welcome to React Router!
+## Travel Dashboard
 
-A modern, production-ready template for building full-stack React applications using React Router.
-
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/remix-run/react-router-templates/tree/main/default)
+A travel app that provides a public-facing itinerary search for travelers and a full admin dashboard for travel agencies. Travelers can discover, view, comment on, and bookmark itineraries; agency users can create, update, and delete trips, manage users, and moderate content. The UI is responsive and built with Tailwind CSS.
 
 ## Features
 
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
+**Public-facing page**
+- Search & browse itineraries by destination, date, tags, price, or keywords.
+- View detailed itinerary pages with day-by-day plans.
+- Read and post comments.
+- Save itineraries for later.
+- Pay for a trip with Stripe.
 
+**Admin Dashboard**
+- Create, read, update, and delete itineraries.
+- View and manage user accounts and roles.
+- Track real-time activities and trends.
+
+## Tech Stack
+- Typescript
+- React
+- React Router
+- Vite
+- Next.js
+- Tailwind CSS
+- Docker
+  
 ## Getting Started
 
 ### Installation
